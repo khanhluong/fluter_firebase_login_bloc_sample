@@ -4,15 +4,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import 'models/models.dart';
 
-/// Thrown if during the sign up process if a failure occurs.
 class SignUpFailure implements Exception {}
 
 class LogInWithEmailAndPasswordFailure implements Exception {}
 
-/// Thrown during the sign in with google process if a failure occurs.
 class LogInWithGoogleFailure implements Exception {}
 
-/// Thrown during the logout process if a failure occurs.
 class LogOutFailure implements Exception {}
 
 class AuthenticationRepository {
@@ -37,6 +34,41 @@ class AuthenticationRepository {
           email: email, password: password);
     } on Exception {
       throw SignUpFailure();
+    }
+  }
+
+  Future<void> logInWithGoogle() async {
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+
+      await _firebaseAuth.signInWithCredential(credential);
+    } on Exception {
+      throw LogInWithGoogleFailure();
+    }
+  }
+
+  Future<void> logInWithEmailAndPassword({
+    @required String email,
+    @required String password,
+  }) async {
+    assert(email != null && password != null);
+
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(
+          email: email, password: password);
+    } on Exception {
+      throw LogInWithEmailAndPasswordFailure();
+    }
+  }
+
+  Future<void> logOut() async {
+    try {
+      await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
+    } on Exception {
+      throw LogOutFailure();
     }
   }
 }
