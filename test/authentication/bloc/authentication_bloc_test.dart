@@ -50,5 +50,25 @@ main() {
             authenticationRepository: authenticationRepository),
         act: (bloc) => bloc.add(AuthenticationUserChanged(user)),
         expect: <AuthenticationState>[AuthenticationState.authenticated(user)]);
+    blocTest<AuthenticationBloc, AuthenticationState>(
+        'emits [unauthenticated] when user is empty',
+        build: () => AuthenticationBloc(
+            authenticationRepository: authenticationRepository),
+        act: (bloc) => bloc.add(AuthenticationUserChanged(User.empty)),
+        expect: const <AuthenticationState>[
+          AuthenticationState.unauthenticated(),
+        ]);
+  });
+
+  group('AuthenticationLogoutRequest', () {
+    blocTest<AuthenticationBloc, AuthenticationState>(
+        'calls logOut on authenticationRepository '
+        'when AuthenticationLogoutRequested is added',
+        build: () => AuthenticationBloc(
+            authenticationRepository: authenticationRepository),
+        act: (bloc) => bloc.add(AuthenticationLogoutRequested()),
+        verify: (_) {
+          verify(authenticationRepository.logOut()).called(1);
+        });
   });
 }
