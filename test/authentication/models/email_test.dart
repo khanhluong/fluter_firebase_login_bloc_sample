@@ -1,7 +1,34 @@
+import 'package:flutter_login/authentication/models/email.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Password test', () {
-    group('constructor', () {});
+  const emailString = 'emailtest@gmail.com';
+
+  group('email', () {
+    group('constructors', () {
+      test('pure creates correct instance', () {
+        final email = Email.pure();
+        expect(email.value, '');
+        expect(email.pure, true);
+      });
+      test('dirty creates correct instance', () {
+        final email = Email.dirty(emailString);
+        expect(email.value, emailString);
+        expect(email.pure, false);
+      });
+    });
+
+    group('validator', () {
+      test('returns invalid error when email is empty', () {
+        expect(Email.dirty('').error, EmailValidationError.invalid);
+      });
+      test('returns invalid error when email is malformed', () {
+        expect(Email.dirty('test').error, EmailValidationError.invalid);
+      });
+
+      test('is valid when email is valid', () {
+        expect(Email.dirty(emailString).error, isNull);
+      });
+    });
   });
 }
